@@ -10,6 +10,26 @@ function base64url(buf) {
   return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
 }
 
+// Normalise a service-account private key that may have been mangled when
+// pasted into an env var (escaped newlines, wrapping quotes, base64, CRLF).
+function normalizePrivateKey(raw) {
+  let k = raw.trim()
+  // If it doesn't look like a PEM, assume it's base64-encoded PEM and decode it
+  if (!k.includes('BEGIN')) {
+    try {
+      const decoded = Buffer.from(k, 'base64').toString('utf8')
+      if (decoded.includes('BEGIN')) k = decoded
+    } catch (_) {}
+  }
+  // Strip wrapping quotes
+  if ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
+    k = k.slice(1, -1)
+  }
+  // Convert escaped newlines to real ones, normalise CRLF
+  k = k.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n')
+  return k.trim() + '\n'
+}
+
 async function getAccessToken(clientEmail, privateKey) {
   const now = Math.floor(Date.now() / 1000)
   const header = base64url(Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })))
@@ -21,9 +41,8 @@ async function getAccessToken(clientEmail, privateKey) {
     exp: now + 3600,
   })))
   const signingInput = `${header}.${payload}`
-  const key = crypto.createPrivateKey(privateKey.replace(/\\n/g, '\n'))
-  const sig = crypto.sign('SHA256', Buffer.from(signingInput), { key, dsaEncoding: 'ieee-p1363' })
-  // RS256 uses PKCS1 which sign() handles automatically — no need for dsaEncoding for RSA
+  const key = crypto.createPrivateKey({ key: normalizePrivateKey(privateKey), format: 'pem' })
+  const sig = crypto.sign('RSA-SHA256', Buffer.from(signingInput), key)
   const jwt = `${signingInput}.${base64url(sig)}`
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -64,9 +83,10 @@ exports.handler = async (event) => {
 
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' }
 
-  const { GA_PROPERTY_ID, GA_CLIENT_EMAIL, GA_PRIVATE_KEY } = process.env
+  const { GA_PROPERTY_ID, GA_CLIENT_EMAIL, GA_PRIVATE_KEY, GA_PRIVATE_KEY_BASE64 } = process.env
+  const privateKey = GA_PRIVATE_KEY_BASE64 || GA_PRIVATE_KEY
 
-  if (!GA_PROPERTY_ID || !GA_CLIENT_EMAIL || !GA_PRIVATE_KEY) {
+  if (!GA_PROPERTY_ID || !GA_CLIENT_EMAIL || !privateKey) {
     return {
       statusCode: 200,
       headers,
@@ -75,7 +95,7 @@ exports.handler = async (event) => {
   }
 
   try {
-    const token = await getAccessToken(GA_CLIENT_EMAIL, GA_PRIVATE_KEY)
+    const token = await getAccessToken(GA_CLIENT_EMAIL, privateKey)
 
     // Run all reports in parallel
     const [views28d, viewsByDay, deviceBreakdown, topPages, realtimeRes] = await Promise.all([

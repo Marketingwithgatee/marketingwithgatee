@@ -188,6 +188,25 @@ button {
   background: rgba(155, 95, 223, 0.08);
 }
 
+.nav-cv-download {
+  background: var(--purple-bright);
+  border-color: var(--purple-bright);
+  color: var(--off-white);
+}
+
+.nav-cv-download:hover {
+  background: var(--purple-glow);
+  border-color: var(--purple-glow);
+  color: var(--off-white);
+}
+
+.about-cv-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
 .nav-theme-toggle {
   display: flex;
   align-items: center;
@@ -497,6 +516,7 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  align-items: stretch;
 }
 
 .case-card {
@@ -506,6 +526,8 @@ button {
   overflow: hidden;
   transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
   cursor: default;
+  display: flex;
+  flex-direction: column;
 }
 
 .case-card:hover {
@@ -550,6 +572,9 @@ button {
 
 .case-body {
   padding: 28px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .case-number-tags {
@@ -591,6 +616,7 @@ button {
   line-height: 1.7;
   color: var(--silver);
   margin-bottom: 24px;
+  flex: 1;
 }
 
 .case-metrics {

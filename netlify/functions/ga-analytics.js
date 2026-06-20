@@ -137,8 +137,11 @@ exports.handler = async (event) => {
     const token = await getAccessToken(GA_CLIENT_EMAIL, privateKey)
 
     // Run all reports in parallel
-    const [views28d, viewsByDay, deviceBreakdown, topPages, realtimeRes] = await Promise.all([
-      // Total views + sessions last 28 days
+    const [
+      views28d, viewsByDay, deviceBreakdown, topPages, last7d, prev7d,
+      channels, countries, newReturning, hourly,
+    ] = await Promise.all([
+      // Total engagement metrics last 28 days
       runReport(token, GA_PROPERTY_ID, {
         dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
         metrics: [
@@ -147,6 +150,9 @@ exports.handler = async (event) => {
           { name: 'activeUsers' },
           { name: 'averageSessionDuration' },
           { name: 'bounceRate' },
+          { name: 'engagementRate' },
+          { name: 'screenPageViewsPerSession' },
+          { name: 'newUsers' },
         ],
       }),
       // Daily page views last 28 days (for the chart)
@@ -168,16 +174,55 @@ exports.handler = async (event) => {
         dimensions: [{ name: 'pagePath' }],
         metrics: [{ name: 'screenPageViews' }],
         orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
-        limit: 5,
+        limit: 6,
       }),
-      // Last 7 days for comparison
+      // Last 7 days
       runReport(token, GA_PROPERTY_ID, {
         dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
         metrics: [{ name: 'screenPageViews' }, { name: 'sessions' }, { name: 'activeUsers' }],
       }),
+      // Previous 7 days (days 8-14 ago) for week-over-week trend
+      runReport(token, GA_PROPERTY_ID, {
+        dateRanges: [{ startDate: '14daysAgo', endDate: '8daysAgo' }],
+        metrics: [{ name: 'screenPageViews' }, { name: 'sessions' }, { name: 'activeUsers' }],
+      }),
+      // Traffic sources (channel grouping)
+      runReport(token, GA_PROPERTY_ID, {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+        metrics: [{ name: 'sessions' }],
+        orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+        limit: 6,
+      }),
+      // Geography
+      runReport(token, GA_PROPERTY_ID, {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'country' }],
+        metrics: [{ name: 'activeUsers' }],
+        orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+        limit: 6,
+      }),
+      // New vs returning visitors
+      runReport(token, GA_PROPERTY_ID, {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'newVsReturning' }],
+        metrics: [{ name: 'activeUsers' }],
+      }),
+      // Visits by hour of day (0-23)
+      runReport(token, GA_PROPERTY_ID, {
+        dateRanges: [{ startDate: '28daysAgo', endDate: 'today' }],
+        dimensions: [{ name: 'hour' }],
+        metrics: [{ name: 'sessions' }],
+        orderBys: [{ dimension: { dimensionName: 'hour' } }],
+      }),
     ])
 
     const toMetric = (report, idx) => Number(report.rows?.[0]?.metricValues?.[idx]?.value || 0)
+
+    // Build 24-hour array (fill gaps with 0)
+    const hourMap = {}
+    ;(hourly.rows || []).forEach((r) => { hourMap[Number(r.dimensionValues[0].value)] = Number(r.metricValues[0].value) })
+    const hourlySessions = Array.from({ length: 24 }, (_, h) => ({ hour: h, sessions: hourMap[h] || 0 }))
 
     return {
       statusCode: 200,
@@ -189,9 +234,15 @@ exports.handler = async (event) => {
           activeUsers28d: toMetric(views28d, 2),
           avgSessionDuration: Math.round(toMetric(views28d, 3)),
           bounceRate: (toMetric(views28d, 4) * 100).toFixed(1),
-          pageViews7d: toMetric(realtimeRes, 0),
-          sessions7d: toMetric(realtimeRes, 1),
-          activeUsers7d: toMetric(realtimeRes, 2),
+          engagementRate: (toMetric(views28d, 5) * 100).toFixed(1),
+          viewsPerSession: toMetric(views28d, 6).toFixed(1),
+          newUsers28d: toMetric(views28d, 7),
+          pageViews7d: toMetric(last7d, 0),
+          sessions7d: toMetric(last7d, 1),
+          activeUsers7d: toMetric(last7d, 2),
+          pageViewsPrev7d: toMetric(prev7d, 0),
+          sessionsPrev7d: toMetric(prev7d, 1),
+          activeUsersPrev7d: toMetric(prev7d, 2),
         },
         dailyViews: (viewsByDay.rows || []).map((r) => ({
           date: r.dimensionValues[0].value,
@@ -206,6 +257,19 @@ exports.handler = async (event) => {
           path: r.dimensionValues[0].value,
           views: Number(r.metricValues[0].value),
         })),
+        channels: (channels.rows || []).map((r) => ({
+          channel: r.dimensionValues[0].value,
+          sessions: Number(r.metricValues[0].value),
+        })),
+        countries: (countries.rows || []).map((r) => ({
+          country: r.dimensionValues[0].value,
+          users: Number(r.metricValues[0].value),
+        })),
+        newReturning: (newReturning.rows || []).map((r) => ({
+          type: r.dimensionValues[0].value,
+          users: Number(r.metricValues[0].value),
+        })),
+        hourlySessions,
       }),
     }
   } catch (err) {

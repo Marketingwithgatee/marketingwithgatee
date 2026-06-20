@@ -683,7 +683,7 @@ function SparkBar({ values, color = 'var(--purple-bright)' }) {
   )
 }
 
-function StatCard({ label, value, sub }) {
+function StatCard({ label, value, sub, delta }) {
   return (
     <div style={{
       background: 'var(--near-black)',
@@ -692,10 +692,97 @@ function StatCard({ label, value, sub }) {
       padding: '20px 24px',
     }}>
       <div style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--purple-glow)', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 700, color: 'var(--off-white)', lineHeight: 1 }}>{value}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 700, color: 'var(--off-white)', lineHeight: 1 }}>{value}</div>
+        {delta != null && <TrendBadge delta={delta} />}
+      </div>
       {sub && <div style={{ fontSize: '0.75rem', color: 'var(--silver)', marginTop: 6 }}>{sub}</div>}
     </div>
   )
+}
+
+// Week-over-week change pill: green ↑ / red ↓ / grey –
+function TrendBadge({ delta }) {
+  const up = delta > 0, flat = delta === 0
+  const color = flat ? 'var(--silver)' : up ? '#34d399' : '#f87171'
+  const arrow = flat ? '–' : up ? '▲' : '▼'
+  return (
+    <span style={{ fontSize: '0.75rem', fontWeight: 600, color }}>
+      {arrow} {Math.abs(delta)}%
+    </span>
+  )
+}
+
+// Smooth SVG line chart with gradient fill, hover dots and axis labels.
+function LineChart({ series, labels, height = 180, color = 'var(--purple-bright)' }) {
+  const [hover, setHover] = useState(null)
+  const w = 600, h = height, padX = 8, padY = 16
+  const max = Math.max(...series, 1)
+  const min = 0
+  const n = series.length
+  const x = (i) => padX + (i / Math.max(n - 1, 1)) * (w - padX * 2)
+  const y = (v) => padY + (1 - (v - min) / (max - min || 1)) * (h - padY * 2)
+  const pts = series.map((v, i) => [x(i), y(v)])
+  const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ')
+  const areaPath = `${linePath} L ${x(n - 1)} ${h - padY} L ${x(0)} ${h - padY} Z`
+  const gid = `lg-${color.replace(/[^a-z]/gi, '')}`
+  return (
+    <div style={{ position: 'relative' }}>
+      <svg viewBox={`0 0 ${w} ${h}`} width="100%" height={h} preserveAspectRatio="none"
+        onMouseLeave={() => setHover(null)}>
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75].map((g) => (
+          <line key={g} x1={padX} x2={w - padX} y1={padY + g * (h - padY * 2)} y2={padY + g * (h - padY * 2)}
+            stroke="var(--border)" strokeWidth="1" strokeDasharray="3 4" />
+        ))}
+        <path d={areaPath} fill={`url(#${gid})`} />
+        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {hover != null && (
+          <line x1={x(hover)} x2={x(hover)} y1={padY} y2={h - padY} stroke="var(--purple-glow)" strokeWidth="1" />
+        )}
+        {pts.map((p, i) => (
+          <g key={i}>
+            <rect x={x(i) - (w / n) / 2} y={0} width={w / n} height={h} fill="transparent"
+              onMouseEnter={() => setHover(i)} style={{ cursor: 'pointer' }} />
+            {hover === i && <circle cx={p[0]} cy={p[1]} r="4" fill="var(--purple-glow)" stroke="var(--near-black)" strokeWidth="2" />}
+          </g>
+        ))}
+      </svg>
+      {hover != null && (
+        <div style={{
+          position: 'absolute', top: 4, left: `${(hover / Math.max(n - 1, 1)) * 100}%`,
+          transform: 'translateX(-50%)', background: 'var(--near-black)', border: '1px solid var(--border)',
+          borderRadius: 6, padding: '4px 8px', fontSize: '0.72rem', color: 'var(--off-white)',
+          pointerEvents: 'none', whiteSpace: 'nowrap',
+        }}>
+          <strong>{series[hover]}</strong>{labels && labels[hover] ? ` · ${labels[hover]}` : ''}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Horizontal ranked bar list (sources, countries, etc.)
+function RankBars({ rows, labelKey, valueKey, fmt = (n) => n, accent = 'var(--purple-bright)' }) {
+  const total = rows.reduce((a, r) => a + r[valueKey], 0) || 1
+  const max = Math.max(...rows.map((r) => r[valueKey]), 1)
+  if (!rows.length) return <div style={{ color: 'var(--silver)', fontSize: '0.85rem' }}>No data yet.</div>
+  return rows.map((r, i) => (
+    <div key={i} style={{ marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: '0.85rem' }}>
+        <span style={{ color: 'var(--silver-light)', textTransform: 'capitalize', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '60%' }}>{r[labelKey] || '(not set)'}</span>
+        <span style={{ color: 'var(--silver)' }}>{fmt(r[valueKey])} · {Math.round((r[valueKey] / total) * 100)}%</span>
+      </div>
+      <div style={{ height: 6, background: 'var(--border)', borderRadius: 4 }}>
+        <div style={{ height: '100%', width: `${(r[valueKey] / max) * 100}%`, background: accent, borderRadius: 4 }} />
+      </div>
+    </div>
+  ))
 }
 
 function AnalyticsSection() {
@@ -733,79 +820,141 @@ function AnalyticsSection() {
     </div>
   )
 
-  const { summary, dailyViews, devices, topPages } = data
+  const { summary, dailyViews, devices, topPages, channels = [], countries = [], newReturning = [], hourlySessions = [] } = data
   const viewValues = dailyViews.map((d) => d.views)
   const sessionValues = dailyViews.map((d) => d.sessions)
+  const dayLabels = dailyViews.map((d) => d.date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2'))
 
   const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
   const fmtDuration = (s) => s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
-  const totalDeviceSessions = devices.reduce((a, d) => a + d.sessions, 0)
+  const pct = (cur, prev) => prev > 0 ? Math.round(((cur - prev) / prev) * 100) : (cur > 0 ? 100 : 0)
+  const totalDeviceSessions = devices.reduce((a, d) => a + d.sessions, 0) || 1
+
+  const viewsDelta = pct(summary.pageViews7d, summary.pageViewsPrev7d)
+  const usersDelta = pct(summary.activeUsers7d, summary.activeUsersPrev7d)
+  const sessDelta = pct(summary.sessions7d, summary.sessionsPrev7d)
+
+  // ── Auto-generated insights ──────────────────────────────────────────────
+  const insights = []
+  if (summary.pageViewsPrev7d > 0) {
+    insights.push(viewsDelta >= 0
+      ? `📈 Traffic is up ${viewsDelta}% week-over-week — ${summary.pageViews7d} views in the last 7 days vs ${summary.pageViewsPrev7d} the week before.`
+      : `📉 Traffic dipped ${Math.abs(viewsDelta)}% week-over-week (${summary.pageViews7d} vs ${summary.pageViewsPrev7d} views). Worth sharing your link again.`)
+  }
+  const topDevice = [...devices].sort((a, b) => b.sessions - a.sessions)[0]
+  if (topDevice) insights.push(`📱 Most visitors browse on ${topDevice.device} (${Math.round((topDevice.sessions / totalDeviceSessions) * 100)}% of sessions).`)
+  const topCountry = countries[0]
+  if (topCountry) insights.push(`🌍 Your biggest audience is in ${topCountry.country} (${topCountry.users} visitor${topCountry.users === 1 ? '' : 's'})${countries[1] ? `, followed by ${countries[1].country}` : ''}.`)
+  const topChannel = channels[0]
+  if (topChannel) insights.push(`🚪 Most sessions arrive via ${topChannel.channel.toLowerCase()}.`)
+  const returning = newReturning.find((r) => /return/i.test(r.type))
+  const totalNR = newReturning.reduce((a, r) => a + r.users, 0)
+  if (returning && totalNR > 0) insights.push(`🔁 ${Math.round((returning.users / totalNR) * 100)}% of visitors are returning — people are coming back to your work.`)
+  const peakHour = [...hourlySessions].sort((a, b) => b.sessions - a.sessions)[0]
+  if (peakHour && peakHour.sessions > 0) insights.push(`⏰ Peak browsing time is around ${peakHour.hour}:00 — a good window to post or send your portfolio.`)
+  if (Number(summary.engagementRate) > 0) insights.push(`✨ ${summary.engagementRate}% of sessions are engaged, with ${summary.viewsPerSession} pages viewed per visit and an average ${fmtDuration(summary.avgSessionDuration)} on site.`)
+
+  const maxHour = Math.max(...hourlySessions.map((h) => h.sessions), 1)
 
   return (
     <>
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
-        <StatCard label="Page views (28d)" value={fmt(summary.pageViews28d)} sub={`${fmt(summary.pageViews7d)} last 7 days`} />
-        <StatCard label="Sessions (28d)" value={fmt(summary.sessions28d)} sub={`${fmt(summary.sessions7d)} last 7 days`} />
-        <StatCard label="Unique visitors (28d)" value={fmt(summary.activeUsers28d)} sub={`${fmt(summary.activeUsers7d)} last 7 days`} />
-        <StatCard label="Avg session" value={fmtDuration(summary.avgSessionDuration)} sub="time spent per visit" />
+      {/* Headline stats with week-over-week trend */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+        <StatCard label="Page views (28d)" value={fmt(summary.pageViews28d)} sub={`${fmt(summary.pageViews7d)} last 7 days`} delta={viewsDelta} />
+        <StatCard label="Unique visitors (28d)" value={fmt(summary.activeUsers28d)} sub={`${fmt(summary.activeUsers7d)} last 7 days`} delta={usersDelta} />
+        <StatCard label="Sessions (28d)" value={fmt(summary.sessions28d)} sub={`${fmt(summary.sessions7d)} last 7 days`} delta={sessDelta} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+        <StatCard label="Engagement rate" value={`${summary.engagementRate}%`} sub="actively engaged visits" />
+        <StatCard label="Avg session" value={fmtDuration(summary.avgSessionDuration)} sub={`${summary.viewsPerSession} pages / visit`} />
+        <StatCard label="New visitors (28d)" value={fmt(summary.newUsers28d)} sub="first-time arrivals" />
         <StatCard label="Bounce rate" value={`${summary.bounceRate}%`} sub="left without interacting" />
       </div>
 
-      {/* Daily views chart */}
+      {/* Auto insights */}
+      {insights.length > 0 && (
+        <div className="admin-card" style={{ borderColor: 'var(--purple)', background: 'rgba(124,58,237,0.06)' }}>
+          <div className="admin-card-title">What this means 💡</div>
+          <ul style={{ margin: 0, paddingLeft: 4, listStyle: 'none', display: 'grid', gap: 10 }}>
+            {insights.map((t, i) => (
+              <li key={i} style={{ fontSize: '0.9rem', color: 'var(--silver-light)', lineHeight: 1.5 }}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Page views line graph */}
       <div className="admin-card">
         <div className="admin-card-title">Page views — last 28 days</div>
-        <SparkBar values={viewValues} />
+        <LineChart series={viewValues} labels={dayLabels} />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.7rem', color: 'var(--silver)' }}>
-          <span>{dailyViews[0]?.date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2')}</span>
-          <span>Today</span>
+          <span>{dayLabels[0]}</span><span>Today</span>
         </div>
       </div>
 
-      {/* Sessions chart */}
+      {/* Sessions line graph */}
       <div className="admin-card">
         <div className="admin-card-title">Sessions — last 28 days</div>
-        <SparkBar values={sessionValues} color="var(--purple)" />
+        <LineChart series={sessionValues} labels={dayLabels} color="var(--purple-glow)" />
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.7rem', color: 'var(--silver)' }}>
-          <span>{dailyViews[0]?.date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2')}</span>
-          <span>Today</span>
+          <span>{dayLabels[0]}</span><span>Today</span>
         </div>
       </div>
 
-      {/* Devices + Top pages side by side */}
+      {/* Geography + Traffic sources */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div className="admin-card">
-          <div className="admin-card-title">Devices</div>
-          {devices.map((d) => (
-            <div key={d.device} style={{ marginBottom: 14 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: '0.85rem' }}>
-                <span style={{ textTransform: 'capitalize', color: 'var(--silver-light)' }}>{d.device}</span>
-                <span style={{ color: 'var(--silver)' }}>{Math.round((d.sessions / totalDeviceSessions) * 100)}%</span>
-              </div>
-              <div style={{ height: 6, background: 'var(--border)', borderRadius: 4 }}>
-                <div style={{
-                  height: '100%',
-                  width: `${(d.sessions / totalDeviceSessions) * 100}%`,
-                  background: 'var(--purple-bright)',
-                  borderRadius: 4,
-                }} />
-              </div>
-            </div>
-          ))}
+          <div className="admin-card-title">Where visitors are 🌍</div>
+          <RankBars rows={countries} labelKey="country" valueKey="users" accent="var(--purple-glow)" />
         </div>
         <div className="admin-card">
-          <div className="admin-card-title">Top pages</div>
-          {topPages.map((p) => (
-            <div key={p.path} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.85rem' }}>
-              <span style={{ color: 'var(--silver)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{p.path}</span>
-              <span style={{ color: 'var(--purple-glow)', fontWeight: 500 }}>{fmt(p.views)}</span>
-            </div>
+          <div className="admin-card-title">How they find you 🚪</div>
+          <RankBars rows={channels} labelKey="channel" valueKey="sessions" />
+        </div>
+      </div>
+
+      {/* Devices + New vs returning */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="admin-card">
+          <div className="admin-card-title">Devices 📱</div>
+          <RankBars rows={devices} labelKey="device" valueKey="sessions" />
+        </div>
+        <div className="admin-card">
+          <div className="admin-card-title">New vs returning 🔁</div>
+          <RankBars rows={newReturning} labelKey="type" valueKey="users" accent="var(--purple-glow)" />
+        </div>
+      </div>
+
+      {/* Hour-of-day pattern */}
+      <div className="admin-card">
+        <div className="admin-card-title">When people visit ⏰ <span style={{ fontWeight: 400, color: 'var(--silver)', fontSize: '0.8rem' }}>(sessions by hour, last 28 days)</span></div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 80 }}>
+          {hourlySessions.map((h) => (
+            <div key={h.hour} title={`${h.hour}:00 — ${h.sessions} sessions`} style={{
+              flex: 1, height: `${Math.max(3, (h.sessions / maxHour) * 100)}%`,
+              background: peakHour && h.hour === peakHour.hour ? 'var(--purple-glow)' : 'var(--purple-bright)',
+              borderRadius: 2, opacity: 0.85,
+            }} />
           ))}
         </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.68rem', color: 'var(--silver)' }}>
+          <span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span>
+        </div>
+      </div>
+
+      {/* Top pages */}
+      <div className="admin-card">
+        <div className="admin-card-title">Top pages 📄</div>
+        {topPages.map((p) => (
+          <div key={p.path} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.85rem' }}>
+            <span style={{ color: 'var(--silver)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{p.path}</span>
+            <span style={{ color: 'var(--purple-glow)', fontWeight: 500 }}>{fmt(p.views)} views</span>
+          </div>
+        ))}
       </div>
 
       <div style={{ fontSize: '0.75rem', color: 'var(--silver)', opacity: 0.6, marginTop: 8 }}>
-        Data from Google Analytics · refreshes on page load
+        Data from Google Analytics · last 28 days · refreshes on page load
       </div>
     </>
   )

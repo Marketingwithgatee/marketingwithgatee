@@ -19,6 +19,7 @@
   --radius-sm: 8px;
   --max-width: 1200px;
   --section-padding: 100px 24px;
+  --nav-bg: rgba(8, 7, 9, 0.85);
 }
 
 /* Light theme overrides */
@@ -30,6 +31,7 @@
   --silver: #5A546A;
   --silver-light: #3A3548;
   --off-white: #1A1625;
+  --nav-bg: rgba(248, 247, 252, 0.85);
 }
 
 *, *::before, *::after {
@@ -130,7 +132,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(8, 7, 9, 0.85);
+  background: var(--nav-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid transparent;

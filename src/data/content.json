@@ -7,13 +7,19 @@
   "nav": {
     "logo": "Gatee Gala",
     "links": [
-      {"label": "About", "href": "#about"},
-      {"label": "Work", "href": "#work"}
+      {
+        "label": "About",
+        "href": "#about"
+      },
+      {
+        "label": "Work",
+        "href": "#work"
+      }
     ]
   },
   "hero": {
     "eyebrow": "Marketing with",
-    "name": "Gatee Gala",
+    "name": "Kvicha Kvaratskhelia",
     "bio": "I'm a marketing and communications professional with 4+ years of experience at the intersection of music, live events, and digital. I build campaigns, partnerships, and programmes that create genuine moments for audiences — from South Asia's first profitable music industry conference to scaling a platform's entire digital presence.",
     "photoUrl": "",
     "ctaPrimary": "View my work",
@@ -27,7 +33,16 @@
       "My background spans the music industry, live events, brand partnerships, and digital campaign delivery — with a deep personal connection to music and community that shows up in everything I make.",
       "MSc Management Marketing, University of Bristol (Merit). Bristol Plus Award — attained by fewer than 3% of students. Based in Bristol, open to London and the North."
     ],
-    "skills": ["Campaign strategy","Brand partnerships","Live events","Digital & paid media","Content & social","PR & comms","Influencer & creator","P&L & budgeting"]
+    "skills": [
+      "Campaign strategy",
+      "Brand partnerships",
+      "Live events",
+      "Digital & paid media",
+      "Content & social",
+      "PR & comms",
+      "Influencer & creator",
+      "P&L & budgeting"
+    ]
   },
   "work": {
     "label": "Selected work",
@@ -37,58 +52,116 @@
         "id": 1,
         "number": "01",
         "title": "RISE//DEL 2026 — Sponsorship & Partnerships",
-        "tags": ["Partnerships","Commercial","Events"],
+        "tags": [
+          "Partnerships",
+          "Commercial",
+          "Events"
+        ],
         "imageUrl": "",
         "imageAlt": "Conference panel discussion",
         "description": "As sole Project Lead for RISE//DEL — a 3-day multidisciplinary conference in Delhi/Gurgaon — I owned the full commercial partnerships strategy from outreach to activation, delivering 250% of target and driving the first ever profitable edition.",
         "metrics": [
-          {"value": "250%", "label": "Sponsorship target"},
-          {"value": "40%", "label": "Net surplus"},
-          {"value": "2,000+", "label": "Attendees"},
-          {"value": "1st", "label": "Profitable edition ever"}
+          {
+            "value": "250%",
+            "label": "Sponsorship target"
+          },
+          {
+            "value": "40%",
+            "label": "Net surplus"
+          },
+          {
+            "value": "2,000+",
+            "label": "Attendees"
+          },
+          {
+            "value": "1st",
+            "label": "Profitable edition ever"
+          }
         ]
       },
       {
         "id": 2,
         "number": "02",
         "title": "The TuneCore Grant",
-        "tags": ["Programme design","Digital","PR"],
+        "tags": [
+          "Programme design",
+          "Digital",
+          "PR"
+        ],
         "imageUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=70&fit=crop",
         "imageAlt": "Music studio recording",
         "description": "In 2022, I conceived and established TuneCore India's Artist Grant from scratch — framework, criteria, application process, and comms — while simultaneously overhauling the brand's entire multi-channel strategy. The Grant runs annually to this day.",
         "metrics": [
-          {"value": "37%", "label": "CPA reduction"},
-          {"value": "93%", "label": "Instagram growth"},
-          {"value": "155M+", "label": "Press impressions"},
-          {"value": "Annual", "label": "Grant still running"}
+          {
+            "value": "37%",
+            "label": "CPA reduction"
+          },
+          {
+            "value": "93%",
+            "label": "Instagram growth"
+          },
+          {
+            "value": "155M+",
+            "label": "Press impressions"
+          },
+          {
+            "value": "Annual",
+            "label": "Grant still running"
+          }
         ]
       },
       {
         "id": 3,
         "number": "03",
         "title": "Represent Management — Anuv Jain on TikTok",
-        "tags": ["TikTok","Organic social","Artist marketing"],
+        "tags": [
+          "TikTok",
+          "Organic social",
+          "Artist marketing"
+        ],
         "imageUrl": "",
         "imageAlt": "Musician performing live",
         "description": "Anuv Jain — 3.4M YouTube subscribers, Forbes 30 Under 30, #1 on Spotify India. His TikTok hadn't kept pace. I built a platform-native content strategy that converted passive listeners into an active community for an intimate, acoustic artist.",
         "metrics": [
-          {"value": "1M+", "label": "Views per video (peak)"},
-          {"value": "↑", "label": "Sustained growth"}
+          {
+            "value": "1M+",
+            "label": "Views per video (peak)"
+          },
+          {
+            "value": "↑",
+            "label": "Sustained growth"
+          }
         ]
       },
       {
         "id": 4,
         "number": "04",
         "title": "JetSynthesys — Anime in India Research",
-        "tags": ["Market research","Consumer insights","Strategy"],
+        "tags": [
+          "Market research",
+          "Consumer insights",
+          "Strategy"
+        ],
         "imageUrl": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&q=70&fit=crop",
         "imageAlt": "Anime and gaming culture",
         "description": "Led a published market study on India's anime fandom — combining focus groups, a 200-person survey, and 20+ source analysis. The findings shaped JetSynthesys's IP strategy and were instrumental in securing the Pokémon Asia partnership.",
         "metrics": [
-          {"value": "Pokémon", "label": "Client won via report"},
-          {"value": "950K+", "label": "Campaign views"},
-          {"value": "35K+", "label": "Reactions"},
-          {"value": "200", "label": "Survey respondents"}
+          {
+            "value": "Pokémon",
+            "label": "Client won via report"
+          },
+          {
+            "value": "950K+",
+            "label": "Campaign views"
+          },
+          {
+            "value": "35K+",
+            "label": "Reactions"
+          },
+          {
+            "value": "200",
+            "label": "Survey respondents"
+          }
         ]
       }
     ]
@@ -120,12 +193,36 @@
   "brands": {
     "label": "Brands I've worked & partnered with",
     "items": [
-      {"name": "TuneCore", "logoUrl": "", "isLight": false},
-      {"name": "Believe", "logoUrl": "", "isLight": false},
-      {"name": "JetSynthesys", "logoUrl": "", "isLight": false},
-      {"name": "RISE//DEL", "logoUrl": "", "isLight": false},
-      {"name": "Spotify", "logoUrl": "", "isLight": false},
-      {"name": "Pokémon", "logoUrl": "", "isLight": false}
+      {
+        "name": "TuneCore",
+        "logoUrl": "",
+        "isLight": false
+      },
+      {
+        "name": "Believe",
+        "logoUrl": "",
+        "isLight": false
+      },
+      {
+        "name": "JetSynthesys",
+        "logoUrl": "",
+        "isLight": false
+      },
+      {
+        "name": "RISE//DEL",
+        "logoUrl": "",
+        "isLight": false
+      },
+      {
+        "name": "Spotify",
+        "logoUrl": "",
+        "isLight": false
+      },
+      {
+        "name": "Pokémon",
+        "logoUrl": "",
+        "isLight": false
+      }
     ]
   },
   "contact": {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import initialContent from '../data/content.json'
 
@@ -68,6 +68,115 @@ function useToast() {
 // ── Deep merge utility ─────────────────────────────────────────────────────────
 function mergeContent(base, patch) {
   return { ...base, ...patch }
+}
+
+// ── Image uploader (uploads file to GitHub public/images/) ────────────────
+async function uploadImageToGitHub(file) {
+  const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
+  const path = `public/images/${filename}`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const bytes = new Uint8Array(arrayBuffer)
+  let binary = ''
+  for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i])
+  const base64 = btoa(binary)
+
+  // Check if file already exists (to get sha)
+  let sha
+  try {
+    const check = await fetch(
+      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}?ref=${GH_BRANCH}`,
+      { headers: { Authorization: `Bearer ${GH_TOKEN}`, Accept: 'application/vnd.github+json' } }
+    )
+    if (check.ok) sha = (await check.json()).sha
+  } catch (_) {}
+
+  const body = { message: `Upload image: ${filename}`, content: base64, branch: GH_BRANCH }
+  if (sha) body.sha = sha
+
+  const res = await fetch(
+    `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${path}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${GH_TOKEN}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }
+  )
+  if (!res.ok) throw new Error(`Image upload failed: ${res.status} ${await res.text()}`)
+  const data = await res.json()
+  return data.content.download_url
+}
+
+function ImageUploadField({ label, id, value, onChange, hint }) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadErr, setUploadErr] = useState('')
+  const fileRef = useRef(null)
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    if (!isGitHubConfigured) {
+      setUploadErr('GitHub not configured — paste a URL instead.')
+      return
+    }
+    setUploading(true)
+    setUploadErr('')
+    try {
+      const url = await uploadImageToGitHub(file)
+      onChange(url)
+    } catch (err) {
+      setUploadErr(err.message)
+    } finally {
+      setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  return (
+    <div className="form-group">
+      <label className="form-label" htmlFor={id}>{label}</label>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <input
+          id={id}
+          type="text"
+          className="form-input"
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="https://... or upload below"
+          style={{ flex: 1 }}
+        />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={handleFile}
+        />
+        <button
+          type="button"
+          className="admin-save-btn"
+          style={{ whiteSpace: 'nowrap', padding: '0.5rem 1rem', fontSize: '0.75rem' }}
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? 'Uploading…' : 'Upload'}
+        </button>
+      </div>
+      {value && (
+        <img
+          src={value}
+          alt="preview"
+          style={{ marginTop: 8, height: 80, width: '100%', objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)' }}
+        />
+      )}
+      {hint && <span className="form-hint">{hint}</span>}
+      {uploadErr && <span className="form-hint" style={{ color: '#ef4444' }}>{uploadErr}</span>}
+    </div>
+  )
 }
 
 // ── Reusable form components ──────────────────────────────────────────────────
@@ -170,7 +279,7 @@ function HeroEditor({ data, onChange }) {
       <FormField label="Eyebrow Text" id="heroEyebrow" value={data.eyebrow} onChange={set('eyebrow')} />
       <FormField label="Name" id="heroName" value={data.name} onChange={set('name')} />
       <FormTextarea label="Bio" id="heroBio" value={data.bio} onChange={set('bio')} rows={5} />
-      <FormField label="Photo URL" id="heroPhoto" value={data.photoUrl} onChange={set('photoUrl')} hint="Direct link to your photo. Leave empty to show placeholder." placeholder="https://..." />
+      <ImageUploadField label="Profile Photo" id="heroPhoto" value={data.photoUrl} onChange={set('photoUrl')} hint="Upload your photo or paste a URL. Leave empty to show placeholder." />
       <div className="form-row">
         <FormField label="Primary CTA Label" id="ctaPrimary" value={data.ctaPrimary} onChange={set('ctaPrimary')} />
         <FormField label="Secondary CTA Label" id="ctaSecondary" value={data.ctaSecondary} onChange={set('ctaSecondary')} />
@@ -287,7 +396,7 @@ function WorkEditor({ data, onChange }) {
             <FormField label="Number" id={`cn-${i}`} value={c.number} onChange={(v) => updateCase(i, 'number', v)} placeholder="01" />
             <FormField label="Title" id={`ct-${i}`} value={c.title} onChange={(v) => updateCase(i, 'title', v)} />
           </div>
-          <FormField label="Image URL" id={`ci-${i}`} value={c.imageUrl} onChange={(v) => updateCase(i, 'imageUrl', v)} placeholder="https://..." hint="Leave empty for placeholder" />
+          <ImageUploadField label="Card Image" id={`ci-${i}`} value={c.imageUrl} onChange={(v) => updateCase(i, 'imageUrl', v)} hint="Upload an image or paste a URL. Leave empty for placeholder." />
           <FormField label="Image Alt Text" id={`cia-${i}`} value={c.imageAlt} onChange={(v) => updateCase(i, 'imageAlt', v)} />
           <FormTextarea label="Description" id={`cd-${i}`} value={c.description} onChange={(v) => updateCase(i, 'description', v)} rows={4} />
           <div className="form-group">

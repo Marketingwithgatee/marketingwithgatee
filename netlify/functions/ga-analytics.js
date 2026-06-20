@@ -12,22 +12,33 @@ function base64url(buf) {
 
 // Normalise a service-account private key that may have been mangled when
 // pasted into an env var (escaped newlines, wrapping quotes, base64, CRLF).
+// Rebuilds the PEM from scratch so stray whitespace/wrapping never matters.
 function normalizePrivateKey(raw) {
-  let k = raw.trim()
-  // If it doesn't look like a PEM, assume it's base64-encoded PEM and decode it
+  let k = String(raw).trim()
+  // Strip wrapping quotes (possibly added when pasting into a shell/env UI)
+  if ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
+    k = k.slice(1, -1).trim()
+  }
+  // If it doesn't look like a PEM, assume it's base64-encoded PEM and decode it.
+  // (strip whitespace first — env UIs sometimes inject line breaks)
   if (!k.includes('BEGIN')) {
     try {
-      const decoded = Buffer.from(k, 'base64').toString('utf8')
+      const decoded = Buffer.from(k.replace(/\s+/g, ''), 'base64').toString('utf8')
       if (decoded.includes('BEGIN')) k = decoded
     } catch (_) {}
   }
-  // Strip wrapping quotes
-  if ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
-    k = k.slice(1, -1)
-  }
   // Convert escaped newlines to real ones, normalise CRLF
-  k = k.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n')
-  return k.trim() + '\n'
+  k = k.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim()
+
+  // Rebuild the PEM: extract header label + the base64 body, re-wrap at 64 cols.
+  const m = k.match(/-----BEGIN ([^-]+)-----([\s\S]*?)-----END \1-----/)
+  if (m) {
+    const label = m[1].trim()
+    const body = m[2].replace(/[^A-Za-z0-9+/=]/g, '') // keep only base64 chars
+    const wrapped = body.match(/.{1,64}/g).join('\n')
+    return `-----BEGIN ${label}-----\n${wrapped}\n-----END ${label}-----\n`
+  }
+  return k + '\n'
 }
 
 async function getAccessToken(clientEmail, privateKey) {

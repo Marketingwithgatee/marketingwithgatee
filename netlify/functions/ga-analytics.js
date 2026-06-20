@@ -97,6 +97,34 @@ exports.handler = async (event) => {
   const { GA_PROPERTY_ID, GA_CLIENT_EMAIL, GA_PRIVATE_KEY, GA_PRIVATE_KEY_BASE64 } = process.env
   const privateKey = GA_PRIVATE_KEY_BASE64 || GA_PRIVATE_KEY
 
+  // Safe diagnostics: /.netlify/functions/ga-analytics?debug=1
+  // Reveals structure only — never the key material itself.
+  if (event.queryStringParameters && event.queryStringParameters.debug) {
+    const norm = privateKey ? normalizePrivateKey(privateKey) : ''
+    let parseOk = false, parseErr = null
+    try { crypto.createPrivateKey({ key: norm, format: 'pem' }); parseOk = true }
+    catch (e) { parseErr = e.message }
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        hasPropertyId: !!GA_PROPERTY_ID,
+        hasClientEmail: !!GA_CLIENT_EMAIL,
+        clientEmailEndsWith: GA_CLIENT_EMAIL ? GA_CLIENT_EMAIL.slice(-25) : null,
+        usingVar: GA_PRIVATE_KEY_BASE64 ? 'GA_PRIVATE_KEY_BASE64' : (GA_PRIVATE_KEY ? 'GA_PRIVATE_KEY' : 'none'),
+        rawLength: privateKey ? privateKey.length : 0,
+        rawHasBEGIN: privateKey ? privateKey.includes('BEGIN') : false,
+        rawFirst15: privateKey ? privateKey.slice(0, 15) : null,
+        normHasBEGIN: norm.includes('BEGIN'),
+        normFirstLine: norm.split('\n')[0] || null,
+        normLineCount: norm.split('\n').length,
+        normBodyChars: norm.replace(/-----[^-]+-----/g, '').replace(/\s/g, '').length,
+        parseOk,
+        parseErr,
+      }, null, 2),
+    }
+  }
+
   if (!GA_PROPERTY_ID || !GA_CLIENT_EMAIL || !privateKey) {
     return {
       statusCode: 200,

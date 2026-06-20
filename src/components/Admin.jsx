@@ -660,6 +660,157 @@ function AdminSecurityEditor({ data, onSave, saving }) {
   )
 }
 
+// ── Analytics Section ─────────────────────────────────────────────────────────
+function SparkBar({ values, color = 'var(--purple-bright)' }) {
+  const max = Math.max(...values, 1)
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 60 }}>
+      {values.map((v, i) => (
+        <div
+          key={i}
+          title={String(v)}
+          style={{
+            flex: 1,
+            height: `${Math.max(4, (v / max) * 100)}%`,
+            background: i === values.length - 1 ? 'var(--purple-glow)' : color,
+            borderRadius: 3,
+            opacity: 0.85,
+            transition: 'height 0.3s',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function StatCard({ label, value, sub }) {
+  return (
+    <div style={{
+      background: 'var(--near-black)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      padding: '20px 24px',
+    }}>
+      <div style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--purple-glow)', marginBottom: 8 }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '2rem', fontWeight: 700, color: 'var(--off-white)', lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: '0.75rem', color: 'var(--silver)', marginTop: 6 }}>{sub}</div>}
+    </div>
+  )
+}
+
+function AnalyticsSection() {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
+
+  useEffect(() => {
+    fetch('/.netlify/functions/ga-analytics')
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) setErr(d.error)
+        else setData(d)
+      })
+      .catch((e) => setErr(e.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return <div style={{ color: 'var(--silver)', padding: 32 }}>Loading analytics…</div>
+
+  if (err) return (
+    <div className="admin-card">
+      <div className="admin-banner" style={{ borderColor: '#f59e0b', background: 'rgba(245,158,11,0.08)' }}>
+        <span className="admin-banner-icon">⚠️</span>
+        <div>
+          <strong>Analytics not configured yet.</strong><br />
+          <span style={{ fontSize: '0.85rem', color: 'var(--silver)' }}>{err}</span><br /><br />
+          <span style={{ fontSize: '0.85rem', color: 'var(--silver)' }}>
+            To enable: set up a Google service account, then add these 3 variables in
+            <strong> Netlify → Site settings → Environment variables</strong>:<br />
+            <code style={{ fontSize: '0.8rem' }}>GA_PROPERTY_ID</code> · <code style={{ fontSize: '0.8rem' }}>GA_CLIENT_EMAIL</code> · <code style={{ fontSize: '0.8rem' }}>GA_PRIVATE_KEY</code>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+
+  const { summary, dailyViews, devices, topPages } = data
+  const viewValues = dailyViews.map((d) => d.views)
+  const sessionValues = dailyViews.map((d) => d.sessions)
+
+  const fmt = (n) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+  const fmtDuration = (s) => s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
+  const totalDeviceSessions = devices.reduce((a, d) => a + d.sessions, 0)
+
+  return (
+    <>
+      {/* Summary cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+        <StatCard label="Page views (28d)" value={fmt(summary.pageViews28d)} sub={`${fmt(summary.pageViews7d)} last 7 days`} />
+        <StatCard label="Sessions (28d)" value={fmt(summary.sessions28d)} sub={`${fmt(summary.sessions7d)} last 7 days`} />
+        <StatCard label="Unique visitors (28d)" value={fmt(summary.activeUsers28d)} sub={`${fmt(summary.activeUsers7d)} last 7 days`} />
+        <StatCard label="Avg session" value={fmtDuration(summary.avgSessionDuration)} sub="time spent per visit" />
+        <StatCard label="Bounce rate" value={`${summary.bounceRate}%`} sub="left without interacting" />
+      </div>
+
+      {/* Daily views chart */}
+      <div className="admin-card">
+        <div className="admin-card-title">Page views — last 28 days</div>
+        <SparkBar values={viewValues} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.7rem', color: 'var(--silver)' }}>
+          <span>{dailyViews[0]?.date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2')}</span>
+          <span>Today</span>
+        </div>
+      </div>
+
+      {/* Sessions chart */}
+      <div className="admin-card">
+        <div className="admin-card-title">Sessions — last 28 days</div>
+        <SparkBar values={sessionValues} color="var(--purple)" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: '0.7rem', color: 'var(--silver)' }}>
+          <span>{dailyViews[0]?.date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2')}</span>
+          <span>Today</span>
+        </div>
+      </div>
+
+      {/* Devices + Top pages side by side */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div className="admin-card">
+          <div className="admin-card-title">Devices</div>
+          {devices.map((d) => (
+            <div key={d.device} style={{ marginBottom: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: '0.85rem' }}>
+                <span style={{ textTransform: 'capitalize', color: 'var(--silver-light)' }}>{d.device}</span>
+                <span style={{ color: 'var(--silver)' }}>{Math.round((d.sessions / totalDeviceSessions) * 100)}%</span>
+              </div>
+              <div style={{ height: 6, background: 'var(--border)', borderRadius: 4 }}>
+                <div style={{
+                  height: '100%',
+                  width: `${(d.sessions / totalDeviceSessions) * 100}%`,
+                  background: 'var(--purple-bright)',
+                  borderRadius: 4,
+                }} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="admin-card">
+          <div className="admin-card-title">Top pages</div>
+          {topPages.map((p) => (
+            <div key={p.path} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--silver)', fontFamily: 'monospace', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>{p.path}</span>
+              <span style={{ color: 'var(--purple-glow)', fontWeight: 500 }}>{fmt(p.views)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ fontSize: '0.75rem', color: 'var(--silver)', opacity: 0.6, marginTop: 8 }}>
+        Data from Google Analytics · refreshes on page load
+      </div>
+    </>
+  )
+}
+
 // ── Sidebar nav config ────────────────────────────────────────────────────────
 const NAV_SECTIONS = [
   { id: 'general',   icon: '⚙️',  label: 'General' },
@@ -673,6 +824,7 @@ const NAV_SECTIONS = [
   { id: 'nav',       icon: '🔗',  label: 'Navigation' },
   { id: 'footer',    icon: '📌',  label: 'Footer' },
   { id: 'security',  icon: '🔒',  label: 'Admin Security' },
+  { id: 'analytics', icon: '📊',  label: 'Analytics' },
 ]
 
 // ── Main Admin component ──────────────────────────────────────────────────────
@@ -833,6 +985,14 @@ export default function Admin() {
             <div className="admin-section-title">Admin Security</div>
             <div className="admin-section-desc">Manage your admin password.</div>
             <AdminSecurityEditor data={content.meta} onSave={handleSave} saving={saving} />
+          </>
+        )
+      case 'analytics':
+        return (
+          <>
+            <div className="admin-section-title">Analytics</div>
+            <div className="admin-section-desc">Real traffic data from Google Analytics — who's visiting, how long they stay, which pages they read.</div>
+            <AnalyticsSection />
           </>
         )
       default:

@@ -294,8 +294,13 @@ function Testimonials() {
                 <div className="testimonial-quote">"</div>
                 <p className="testimonial-text">{item.text}</p>
                 <div className="testimonial-author">
-                  <span className="testimonial-name">{item.name}</span>
-                  <span className="testimonial-role">{item.role}</span>
+                  {item.imageUrl && (
+                    <img src={item.imageUrl} alt={item.name} className="testimonial-avatar" />
+                  )}
+                  <div className="testimonial-author-text">
+                    <span className="testimonial-name">{item.name}</span>
+                    <span className="testimonial-role">{item.role}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -314,8 +319,13 @@ function Testimonials() {
                   <div className="testimonial-quote">"</div>
                   <p className="testimonial-text">{item.text}</p>
                   <div className="testimonial-author">
-                    <span className="testimonial-name">{item.name}</span>
-                    <span className="testimonial-role">{item.role}</span>
+                    {item.imageUrl && (
+                      <img src={item.imageUrl} alt={item.name} className="testimonial-avatar" />
+                    )}
+                    <div className="testimonial-author-text">
+                      <span className="testimonial-name">{item.name}</span>
+                      <span className="testimonial-role">{item.role}</span>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -461,8 +461,8 @@ button {
 
 .work-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 .case-card {
@@ -639,10 +639,25 @@ button {
 
 .testimonial-author {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 14px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+}
+
+.testimonial-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(155, 95, 223, 0.3);
+}
+
+.testimonial-author-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .testimonial-name {
@@ -1560,7 +1575,7 @@ button {
   }
 
   .work-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .testimonials-grid {

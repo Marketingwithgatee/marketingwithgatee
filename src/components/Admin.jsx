@@ -437,7 +437,7 @@ function TestimonialsEditor({ data, onChange }) {
 
   const addItem = () => {
     const nextId = data.items.length > 0 ? Math.max(...data.items.map((t) => t.id)) + 1 : 1
-    onChange({ ...data, items: [...data.items, { id: nextId, text: '', name: '', role: '' }] })
+    onChange({ ...data, items: [...data.items, { id: nextId, text: '', name: '', role: '', imageUrl: '' }] })
   }
 
   return (
@@ -463,6 +463,7 @@ function TestimonialsEditor({ data, onChange }) {
             <FormField label="Name" id={`tn-${i}`} value={item.name} onChange={(v) => updateItem(i, 'name', v)} />
             <FormField label="Role / Company" id={`tr-${i}`} value={item.role} onChange={(v) => updateItem(i, 'role', v)} />
           </div>
+          <ImageUploadField label="Photo (optional)" id={`tp-${i}`} value={item.imageUrl} onChange={(v) => updateItem(i, 'imageUrl', v)} hint="Optional headshot shown next to the name." />
         </div>
       ))}
 
@@ -502,10 +503,8 @@ function BrandsEditor({ data, onChange }) {
               Remove
             </button>
           </div>
-          <div className="form-row">
-            <FormField label="Brand Name" id={`bn-${i}`} value={item.name} onChange={(v) => updateItem(i, 'name', v)} placeholder="e.g. TuneCore" />
-            <FormField label="Logo URL" id={`bl-${i}`} value={item.logoUrl} onChange={(v) => updateItem(i, 'logoUrl', v)} placeholder="https://... (leave empty to show name as text)" />
-          </div>
+          <FormField label="Brand Name" id={`bn-${i}`} value={item.name} onChange={(v) => updateItem(i, 'name', v)} placeholder="e.g. TuneCore" />
+          <ImageUploadField label="Logo" id={`bl-${i}`} value={item.logoUrl} onChange={(v) => updateItem(i, 'logoUrl', v)} hint="Upload a logo or paste a URL. Leave empty to show the name as text." />
           <FormToggle label="Light logo (invert on dark bg)" checked={item.isLight} onChange={(v) => updateItem(i, 'isLight', v)} />
         </div>
       ))}

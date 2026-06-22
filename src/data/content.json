@@ -46,7 +46,7 @@
     ]
   },
   "work": {
-    "label": "Selected work",
+    "label": "Work ",
     "title": "Case studies",
     "cases": [
       {
@@ -60,7 +60,7 @@
         ],
         "imageUrl": "https://raw.githubusercontent.com/Marketingwithgatee/marketingwithgatee/main/public/images/1781957691992-DS_04081.jpg",
         "imageAlt": "Conference panel discussion",
-        "description": "As sole Project Lead for RISE//DEL — a 3-day multidisciplinary conference in Delhi/Gurgaon — I owned the full commercial partnerships strategy from outreach to activation, delivering 250% of target and driving the first ever profitable edition.",
+        "description": "As sole Project Lead for RISE//DEL,  a 3-day multidisciplinary conference in Delhi/Gurgaon,  I owned the full commercial partnerships strategy from outreach to activation, delivering 250% of the target and driving the first ever profitable edition.",
         "metrics": [
           {
             "value": "250%",
@@ -79,7 +79,7 @@
             "label": "Profitable edition ever"
           }
         ],
-        "link": ""
+        "link": "https://www.google.com/search?client=safari&rls=en&q=rise.del&ie=UTF-8&oe=UTF-8"
       },
       {
         "id": 2,
@@ -92,7 +92,7 @@
         ],
         "imageUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=70&fit=crop",
         "imageAlt": "Music studio recording",
-        "description": "In 2022, I conceived and established TuneCore India's Artist Grant from scratch — framework, criteria, application process, and comms — while simultaneously overhauling the brand's entire multi-channel strategy. The Grant runs annually to this day.",
+        "description": "In 2022, I conceived and established TuneCore India's Artist Grant from scratch - framework, criteria, application process, and comms - while simultaneously overhauling the brand's entire multi-channel strategy. The Grant runs annually to this day.",
         "metrics": [
           {
             "value": "37%",
@@ -111,7 +111,7 @@
             "label": "Grant still running"
           }
         ],
-        "link": ""
+        "link": "https://www.instagram.com/p/DXZM8YmDWKB/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA=="
       },
       {
         "id": 3,
@@ -133,14 +133,18 @@
           {
             "value": "↑",
             "label": "Sustained growth"
+          },
+          {
+            "value": "7+",
+            "label": "Artist channels managed"
           }
         ],
-        "link": ""
+        "link": "https://representmgmt.in"
       },
       {
         "id": 4,
         "number": "04",
-        "title": "JetSynthesys — Anime in India Research",
+        "title": "JetSynthesys - Anime in India Research",
         "tags": [
           "Market research",
           "Consumer insights",
@@ -167,7 +171,7 @@
             "label": "Survey respondents"
           }
         ],
-        "link": ""
+        "link": "https://brandequity.economictimes.indiatimes.com/news/research/83-indians-prefer-anime-over-other-animated-content-jetsynthesys/90842260"
       }
     ]
   },

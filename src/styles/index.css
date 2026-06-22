@@ -1030,6 +1030,12 @@ button {
   opacity: 0.7;
 }
 
+@media (max-width: 767px) {
+  .footer-admin-link {
+    display: none;
+  }
+}
+
 /* =============================================
    Carousel (Mobile Work & Testimonials)
    ============================================= */

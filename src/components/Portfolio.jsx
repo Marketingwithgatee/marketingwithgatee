@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import content from '../data/content.json'
 
@@ -27,6 +27,19 @@ function useFadeIn() {
     return () => observer.disconnect()
   }, [])
   return ref
+}
+
+// ── Swipe hook ────────────────────────────────────────────────────────────────
+function useSwipe(onSwipeLeft, onSwipeRight) {
+  const startX = useRef(null)
+  const onTouchStart = useCallback((e) => { startX.current = e.touches[0].clientX }, [])
+  const onTouchEnd = useCallback((e) => {
+    if (startX.current === null) return
+    const dx = e.changedTouches[0].clientX - startX.current
+    if (Math.abs(dx) > 40) { dx < 0 ? onSwipeLeft() : onSwipeRight() }
+    startX.current = null
+  }, [onSwipeLeft, onSwipeRight])
+  return { onTouchStart, onTouchEnd }
 }
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
@@ -108,8 +121,8 @@ function Nav() {
         </button>
         <button
           className="nav-hamburger"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="Toggle menu"
         >
           <span /><span /><span />
         </button>
@@ -270,6 +283,7 @@ function Work() {
 
   const prev = () => setCarouselIdx((i) => Math.max(0, i - 1))
   const next = () => setCarouselIdx((i) => Math.min(cases.length - 1, i + 1))
+  const swipe = useSwipe(next, prev)
 
   return (
     <section className="work" id="work" ref={ref}>
@@ -287,7 +301,7 @@ function Work() {
         </div>
 
         {/* Mobile carousel */}
-        <div className="work-carousel carousel-wrap">
+        <div className="work-carousel carousel-wrap" {...swipe}>
           <div className="carousel-track-outer">
             <div
               className="carousel-track"
@@ -326,6 +340,7 @@ function Testimonials() {
 
   const prev = () => setCarouselIdx((i) => Math.max(0, i - 1))
   const next = () => setCarouselIdx((i) => Math.min(items.length - 1, i + 1))
+  const swipe = useSwipe(next, prev)
 
   return (
     <section className="testimonials" id="testimonials" ref={ref}>
@@ -355,7 +370,7 @@ function Testimonials() {
         </div>
 
         {/* Mobile carousel */}
-        <div className="testimonials-carousel carousel-wrap">
+        <div className="testimonials-carousel carousel-wrap" {...swipe}>
           <div className="carousel-track-outer">
             <div
               className="carousel-track"

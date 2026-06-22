@@ -20,8 +20,8 @@
   "hero": {
     "eyebrow": "Marketing with",
     "name": "Gatee Gala",
-    "bio": "I'm a marketing and communications professional with 4+ years of experience at the intersection of music, live events, and digital. I build campaigns, partnerships, and programmes that create genuine moments for audiences — from South Asia's first profitable music industry conference to scaling a platform's entire digital presence.",
-    "photoUrl": "/images/gatee-sticker.jpeg",
+    "bio": "I'm a marketing and communications professional with 4+ years of experience at the intersection of music, live events, and digital. I build campaigns, partnerships, and programmes that create genuine moments for audiences.",
+    "photoUrl": "https://raw.githubusercontent.com/Marketingwithgatee/marketingwithgatee/main/public/images/1782119475322-IMG_7459.HEIC",
     "ctaPrimary": "View my work",
     "ctaSecondary": "Get in touch"
   },

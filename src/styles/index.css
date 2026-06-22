@@ -400,6 +400,18 @@ button {
   border: 1px solid var(--border);
 }
 
+.hero-photo.sticker-frame {
+  border: 10px solid #fff;
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+  transform: rotate(-2.5deg);
+  transition: transform var(--transition);
+}
+
+.hero-photo.sticker-frame:hover {
+  transform: rotate(0deg) scale(1.01);
+}
+
 .hero-photo-placeholder {
   width: 100%;
   aspect-ratio: 3/4;
@@ -631,6 +643,22 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.case-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--purple-glow);
+  transition: gap var(--transition), color var(--transition);
+}
+
+.case-link:hover {
+  gap: 10px;
+  color: var(--off-white);
 }
 
 .metric-value {

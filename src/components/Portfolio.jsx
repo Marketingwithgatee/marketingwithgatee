@@ -161,7 +161,7 @@ function Hero() {
         </div>
         <div className="hero-photo-wrap fade-in fade-in-delay-2">
           {content.hero.photoUrl ? (
-            <img src={content.hero.photoUrl} alt={content.hero.name} className="hero-photo" />
+            <img src={content.hero.photoUrl} alt={content.hero.name} className="hero-photo sticker-frame" />
           ) : (
             <div className="hero-photo-placeholder">
               <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
@@ -194,7 +194,7 @@ function About() {
             ))}
           </div>
           <div className="about-skills-wrap fade-in fade-in-delay-3">
-            <p className="about-skills-title">Specialisms</p>
+            <p className="about-skills-title">Key skills</p>
             <div className="about-skills">
               {content.about.skills.map((skill) => (
                 <span key={skill} className="skill-tag">{skill}</span>
@@ -248,6 +248,14 @@ function CaseCard({ c }) {
               </div>
             ))}
           </div>
+        )}
+        {c.link && (
+          <a href={c.link} target="_blank" rel="noopener noreferrer" className="case-link">
+            View case study
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+            </svg>
+          </a>
         )}
       </div>
     </div>
@@ -479,27 +487,19 @@ function Contact() {
               </a>
             )}
 
-            {cv.enabled && (
+            {cv.enabled && cv.fileUrl && (
               <div className="contact-cv-row">
-                {cv.fileUrl ? (
-                  <>
-                    <a href={cv.fileUrl} download className="contact-cv-btn primary">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="7 10 12 15 17 10"/>
-                        <line x1="12" y1="15" x2="12" y2="3"/>
-                      </svg>
-                      {cv.label}
-                    </a>
-                    <a href={cv.fileUrl} target="_blank" rel="noopener noreferrer" className="contact-cv-btn secondary">
-                      {cv.viewLabel}
-                    </a>
-                  </>
-                ) : (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--silver)', opacity: 0.5 }}>
-                    CV available on request
-                  </span>
-                )}
+                <a href={cv.fileUrl} download className="contact-cv-btn primary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  {cv.label}
+                </a>
+                <a href={cv.fileUrl} target="_blank" rel="noopener noreferrer" className="contact-cv-btn secondary">
+                  {cv.viewLabel}
+                </a>
               </div>
             )}
           </div>

@@ -369,6 +369,7 @@ function WorkEditor({ data, onChange }) {
         imageUrl: '',
         imageAlt: '',
         description: '',
+        link: '',
         metrics: [],
       }],
     })
@@ -399,6 +400,7 @@ function WorkEditor({ data, onChange }) {
           <ImageUploadField label="Card Image" id={`ci-${i}`} value={c.imageUrl} onChange={(v) => updateCase(i, 'imageUrl', v)} hint="Upload an image or paste a URL. Leave empty for placeholder." />
           <FormField label="Image Alt Text" id={`cia-${i}`} value={c.imageAlt} onChange={(v) => updateCase(i, 'imageAlt', v)} />
           <FormTextarea label="Description" id={`cd-${i}`} value={c.description} onChange={(v) => updateCase(i, 'description', v)} rows={4} />
+          <FormField label="Link (optional)" id={`cl-${i}`} value={c.link || ''} onChange={(v) => updateCase(i, 'link', v)} placeholder="https://… — shows a 'View case study' button on the card" />
           <div className="form-group">
             <label className="form-label">Tags (comma-separated)</label>
             <input

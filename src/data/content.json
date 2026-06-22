@@ -21,27 +21,29 @@
     "eyebrow": "Marketing with",
     "name": "Gatee Gala",
     "bio": "I'm a marketing and communications professional with 4+ years of experience at the intersection of music, live events, and digital. I build campaigns, partnerships, and programmes that create genuine moments for audiences — from South Asia's first profitable music industry conference to scaling a platform's entire digital presence.",
-    "photoUrl": "",
+    "photoUrl": "/images/gatee-sticker.jpeg",
     "ctaPrimary": "View my work",
     "ctaSecondary": "Get in touch"
   },
   "about": {
-    "label": "About me",
+    "label": "Getting personal",
     "title": "The story so far",
     "paragraphs": [
       "From scaling a music distribution platform's entire social strategy in Mumbai to leading South Asia's first profitable music industry conference as a one-person team, I work best when the stakes are real and the brief is ambitious.",
+      "Music is the thread through all of it. I grew up obsessed with it and I still live online — equal parts fan, consumer and creator — which means I understand audiences from the inside out. That dual lens of being terminally online makes me both the consumer and the marketeer, with instincts and insights you can't fake.",
       "My background spans the music industry, live events, brand partnerships, and digital campaign delivery — with a deep personal connection to music and community that shows up in everything I make.",
       "MSc Management Marketing, University of Bristol (Merit). Bristol Plus Award — attained by fewer than 3% of students. Based in Bristol, open to London and the North."
     ],
     "skills": [
-      "Campaign strategy",
+      "Marketing strategy",
+      "Brand & campaign management",
       "Brand partnerships",
-      "Live events",
       "Digital & paid media",
       "Content & social",
-      "PR & comms",
+      "PR & communications",
       "Influencer & creator",
-      "P&L & budgeting"
+      "Consumer insights",
+      "Budgeting & P&L"
     ]
   },
   "work": {
@@ -77,7 +79,8 @@
             "value": "1st",
             "label": "Profitable edition ever"
           }
-        ]
+        ],
+        "link": ""
       },
       {
         "id": 2,
@@ -108,7 +111,8 @@
             "value": "Annual",
             "label": "Grant still running"
           }
-        ]
+        ],
+        "link": ""
       },
       {
         "id": 3,
@@ -119,8 +123,8 @@
           "Organic social",
           "Artist marketing"
         ],
-        "imageUrl": "https://images.unsplash.com/photo-1611162616305-c69b3037c431?w=600&q=70&fit=crop",
-        "imageAlt": "Musician performing live",
+        "imageUrl": "/images/anuv-jain.jpeg",
+        "imageAlt": "Anuv Jain performing live with acoustic guitar",
         "description": "Anuv Jain — 3.4M YouTube subscribers, Forbes 30 Under 30, #1 on Spotify India. His TikTok hadn't kept pace. I built a platform-native content strategy that converted passive listeners into an active community for an intimate, acoustic artist.",
         "metrics": [
           {
@@ -131,7 +135,8 @@
             "value": "↑",
             "label": "Sustained growth"
           }
-        ]
+        ],
+        "link": ""
       },
       {
         "id": 4,
@@ -162,7 +167,8 @@
             "value": "200",
             "label": "Survey respondents"
           }
-        ]
+        ],
+        "link": ""
       }
     ]
   },
@@ -222,6 +228,11 @@
         "name": "Pokémon",
         "logoUrl": "",
         "isLight": false
+      },
+      {
+        "name": "Rolling Stone",
+        "logoUrl": "",
+        "isLight": false
       }
     ]
   },
@@ -239,11 +250,11 @@
   "cv": {
     "enabled": true,
     "label": "Download CV",
-    "fileUrl": "",
+    "fileUrl": "/Gatee_Gala_CV.pdf",
     "viewLabel": "View CV"
   },
   "footer": {
-    "name": "Gatee Gala · Marketing with",
-    "location": "Bristol, UK · Open to relocation"
+    "name": "Gatee Gala",
+    "location": "Bristol, UK. Open to relocate"
   }
 }
